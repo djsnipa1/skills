@@ -1,0 +1,33 @@
+name: Sync Upstream
+
+on:
+  schedule:
+    - cron: "0 2 * * *" # Runs daily at 02:00 UTC
+  workflow_dispatch: # Allows manual triggering via the UI
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+
+      - name: Sync and Merge
+        run: |
+          # Add the original repo as upstream
+          git remote add upstream https://github.com/mattpocock/skills
+          git fetch upstream
+
+          # Attempt to merge upstream changes automatically
+          git merge upstream/main --no-edit
+
+          # Push the updated code to your fork
+          git push origin main
